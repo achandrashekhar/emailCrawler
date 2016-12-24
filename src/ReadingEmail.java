@@ -48,8 +48,7 @@ public class ReadingEmail {
                 	bw.write("\n");
                 	
                 	// for date checking
-                	
-                	Date date = originalFormat.parse(msg.getSentDate().toString());
+                	Date date = originalFormat.parse(formatMMMyyyy(msg));
                 	String formattedDate = targetFormat.format(date);
         			bw.write("SENT DATE:" + formattedDate);
         			
@@ -99,4 +98,8 @@ public class ReadingEmail {
             mex.printStackTrace();
         }
     }
+
+	private static String formatMMMyyyy(Message msg) throws MessagingException {
+		return msg.getSentDate().toString();
+	}
 }
