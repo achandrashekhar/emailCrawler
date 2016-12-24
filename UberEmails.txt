@@ -1,0 +1,85 @@
+
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Sat Oct 01 21:04:47 PDT 2016
+SUBJECT:Your Saturday evening trip with Uber
+
+Cost for this trip: $9.07
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Sun Oct 02 00:37:37 PDT 2016
+SUBJECT:Your Saturday evening trip with Uber
+
+Cost for this trip: $6.56
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Fri Oct 14 17:10:25 PDT 2016
+SUBJECT:Your Friday afternoon trip with Uber
+
+Cost for this trip: $5.13
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Sat Oct 15 21:13:01 PDT 2016
+SUBJECT:Your Saturday evening trip with Uber
+
+Cost for this trip: $7.09
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Sun Oct 16 00:45:24 PDT 2016
+SUBJECT:Your Saturday evening trip with Uber
+
+Cost for this trip: $9.28
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Fri Oct 21 22:51:35 PDT 2016
+SUBJECT:Your Friday evening trip with Uber
+
+Cost for this trip: $7.20
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Wed Oct 26 21:41:36 PDT 2016
+SUBJECT:Your Wednesday evening trip with Uber
+
+Cost for this trip: $8.59
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Thu Oct 27 00:27:35 PDT 2016
+SUBJECT:Your Wednesday evening trip with Uber
+
+Cost for this trip: $6.50
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Sat Oct 29 05:35:07 PDT 2016
+SUBJECT:Your Saturday morning trip with Uber
+
+Cost for this trip: $9.17
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Tue Nov 22 19:49:07 PST 2016
+SUBJECT:Your Tuesday evening trip with Uber
+
+Cost for this trip: $6.63
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Sat Nov 26 00:49:29 PST 2016
+SUBJECT:Your Friday evening trip with Uber
+
+Cost for this trip: $5.70
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Sat Nov 26 15:07:51 PST 2016
+SUBJECT:Your Saturday afternoon trip with Uber
+
+Cost for this trip: $10.81
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Mon Dec 05 08:33:13 PST 2016
+SUBJECT:Your Monday morning trip with Uber
+
+Cost for this trip: $11.19
+---------------------------------
+FROM:Uber Receipts <uber.us@uber.com>
+SENT DATE:Fri Dec 16 00:46:58 PST 2016
+SUBJECT:Your Thursday evening trip with Uber
+
+Cost for this trip: $7.62
