@@ -26,8 +26,8 @@ public class ReadingEmail {
              BufferedWriter bw = new BufferedWriter(new FileWriter("UberEmails.txt"));
              Object content;
              // code for converting new date, this needs to be a seperate function
-             DateFormat originalFormat = new SimpleDateFormat("dow mon dd hh:mm:ss zzz yyyy", Locale.ENGLISH);
-         	DateFormat targetFormat = new SimpleDateFormat("mon yyyy");
+             DateFormat originalFormat = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy");
+         	DateFormat targetFormat = new SimpleDateFormat("MMM yyyy");
              
             for(int i =3000;i<=messageCount;i++){
 //            	bw.write("\n");
@@ -49,9 +49,9 @@ public class ReadingEmail {
                 	
                 	// for date checking
                 	
-                	Date date = originalFormat.parse("August 21, 2012");
+                	Date date = originalFormat.parse(msg.getSentDate().toString());
                 	String formattedDate = targetFormat.format(date);
-        			bw.write("SENT DATE:" + date);
+        			bw.write("SENT DATE:" + formattedDate);
         			
         			bw.write("\n");
         			bw.write("SUBJECT:" + msg.getSubject());
