@@ -28,7 +28,7 @@ public class ReadingEmail {
              // code for converting new date, this needs to be a seperate function
              DateFormat originalFormat = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy");
          	DateFormat targetFormat = new SimpleDateFormat("MMM yyyy");
-             
+             double totalSpending = 0;
             for(int i =3000;i<=messageCount;i++){
 //            	bw.write("\n");
 //            	bw.write("Reading email number: "+i);
@@ -50,13 +50,14 @@ public class ReadingEmail {
                 	// for date checking
                 	Date date = originalFormat.parse(formatMMMyyyy(msg));
                 	String formattedDate = targetFormat.format(date);
-        			bw.write("SENT DATE:" + formattedDate);
+        			
         			
         			bw.write("\n");
         			bw.write("SUBJECT:" + msg.getSubject());
         			bw.write("\n");
-                        
-        			//if(){
+                        // check for October Spendings
+        			if(formattedDate.equals("Dec 2016")){
+        			bw.write("SENT DATE:" + formattedDate);
                         content = msg.getContent();  
                         if (content instanceof String)  
                         {  
@@ -74,11 +75,12 @@ public class ReadingEmail {
                              String multiPartText = (String) bp.getContent();
                              Document doc = Jsoup.parse(multiPartText);
                              Elements element = doc.getElementsByClass("totalPrice topPrice tal black");
-                             bw.write("Cost for this trip: " + element.text());
+                             totalSpending += Double.parseDouble(element.text().substring(1));
+                            
                         }  
     
                          	
-                 //  }// date if	
+                   }// date if	
                 			
                 			
 
@@ -87,6 +89,7 @@ public class ReadingEmail {
                     
                     
                 }
+            bw.write("Total Spendings for December are: "+ totalSpending);
             bw.close();
             System.out.println("finished reading "+messageCount+" Emails!");
             System.out.println("Done");
