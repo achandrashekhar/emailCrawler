@@ -16,7 +16,7 @@ public class ReadingEmail {
         try {
             Session session = Session.getInstance(props, null);
             Store store = session.getStore();
-            store.connect("imap.gmail.com", "ashi5393@gmail.com", "subbalakshmi");
+            store.connect("imap.gmail.com", "ashi5393@gmail.com", "**********");
             Folder inbox = store.getFolder("INBOX");
             inbox.open(Folder.READ_ONLY);
             int messageCount = inbox.getMessageCount();
