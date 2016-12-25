@@ -1,3 +1,4 @@
+package emailCrawler;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -6,19 +7,24 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 public class ReadingEmail {
-    public static void main(String[] args) {
+    public void loginUser(String emailId, String password, HttpServletRequest request, HttpServletResponse response) {
         Properties props = new Properties();
         props.setProperty("mail.store.protocol", "imaps");
+        HttpSession usernameSession = request.getSession();
+		usernameSession.setAttribute("username", emailId);
         try {
             Session session = Session.getInstance(props, null);
             Store store = session.getStore();
-            store.connect("imap.gmail.com", "ashi5393@gmail.com", "subbalakshmi");
+            store.connect("imap.gmail.com", emailId, password);
             Folder inbox = store.getFolder("INBOX");
             inbox.open(Folder.READ_ONLY);
             int messageCount = inbox.getMessageCount();
@@ -98,6 +104,14 @@ public class ReadingEmail {
             
             
         } catch (Exception mex) {
+        	String url = "/login?error=" + "Wrong_Credentials_Try_Again";
+			url = response.encodeRedirectURL(url);
+			try {
+				response.sendRedirect(url);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
             mex.printStackTrace();
         }
     }
