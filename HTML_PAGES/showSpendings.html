@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Case</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container">
+<div class="dropdown">
+  <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Show by month
+  <span class="caret"></span></button>
+  <ul class="dropdown-menu">
+    <li><a href="/showspendings?month=Jan">January</a></li>
+    <li><a href="/showspendings?month=Feb">February</a></li>
+     <li><a href="/showspendings?month=Mar">March</a></li> 
+     <li><a href="/showspendings?month=Apr">April</a></li>
+     <li><a href="/showspendings?month=May">May</a></li>
+     <li><a href="/showspendings?month=Jun">June</a></li>
+     <li><a href="/showspendings?month=Jul">July</a></li>
+     <li><a href="/showspendings?month=Aug">August</a></li>
+     <li><a href="/showspendings?month=Sep">September</a></li>
+      <li><a href="/showspendings?month=Oct">October</a></li>
+      <li><a href="/showspendings?month=Nov">November</a></li>
+      <li><a href="/showspendings?month=Dec">December</a></li>
+  </ul> 
+</div>
+  <div class="panel-group">
+   
+    <div class="panel panel-primary">
+      <div class="panel-heading">Spending for the month $key</div>
+      <div class="panel-body">allSpendings.get($key)</div>
+      
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
