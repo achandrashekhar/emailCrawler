@@ -2,6 +2,9 @@ package emailCrawler;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -32,8 +35,10 @@ public class LoginServlet extends BaseServlet {
 			throws IOException {
 		HttpSession session = request.getSession();
 		String uname = (String) session.getAttribute("username");
+		
 		if(uname!=null){
-			String url = "/hotels";
+			String date = getDate();
+			String url = "/showspendings?month="+date;
 			url = response.encodeRedirectURL(url);
 			response.sendRedirect(url);
 		}
@@ -58,18 +63,19 @@ public class LoginServlet extends BaseServlet {
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
-		prepareResponse("Register New User", response, request);
-
-		// Get data from the textfields of the html form
-		String newuser = request.getParameter("user");
-		String newpass = request.getParameter("pass");
-		// sanitize user input to avoid XSS attacks:
-//		newuser = StringEscapeUtils.escapeHtml4(newuser);
-//		newpass = StringEscapeUtils.escapeHtml4(newpass);
-//		
-		// add user's info to the database 
-		readEmailObject.loginUser(newuser, newpass,request,response);
+		prepareResponse("show spendings", response, request);
+		//this will get current default date
+		String date = getDate();
+		String url = "/showspendings?month="+date;
+		url = response.encodeRedirectURL(url);
+		response.sendRedirect(url);
 		
+	}
+	
+	protected String getDate() {
+		String format = "MMM";
+		DateFormat dateFormat = new SimpleDateFormat(format);
+		return dateFormat.format(Calendar.getInstance().getTime());
 	}
 
 	
