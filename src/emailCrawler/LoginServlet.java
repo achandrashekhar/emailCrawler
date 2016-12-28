@@ -63,12 +63,12 @@ public class LoginServlet extends BaseServlet {
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
+		String emailId = (String) request.getAttribute("newuser");
+		String password = (String) request.getAttribute("newpass");
 		prepareResponse("show spendings", response, request);
-		//this will get current default date
-		String date = getDate();
-		String url = "/showspendings?month="+date;
-		url = response.encodeRedirectURL(url);
-		response.sendRedirect(url);
+		//this will get current default month
+		String currentMonth = getDate();
+		readEmailObject.loginUser(emailId, password, request, response, currentMonth);
 		
 	}
 	

@@ -11,12 +11,35 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 public class ReadingEmail {
-    public void loginUser(String emailId, String password, HttpServletRequest request, HttpServletResponse response) {
+	//This Map will store total Monthly Spending
+	public static Map<String,Double> allSpendings = new HashMap<String, Double>();
+	
+	public ReadingEmail() {
+		// Initialize map to Month with corresponding initial spending
+		allSpendings.put("Jan", 0.0);
+		allSpendings.put("Feb", 0.0);
+		allSpendings.put("Mar", 0.0);
+		allSpendings.put("Apr", 0.0);
+		allSpendings.put("May", 0.0);
+		allSpendings.put("Jun", 0.0);
+		allSpendings.put("Jul", 0.0);
+		allSpendings.put("Aug", 0.0);
+		allSpendings.put("Sep", 0.0);
+		allSpendings.put("Oct", 0.0);
+		allSpendings.put("Nov", 0.0);
+		allSpendings.put("Dec", 0.0);
+		
+	}
+	
+    public void loginUser(String emailId, String password, HttpServletRequest request, HttpServletResponse response, String month) {
         Properties props = new Properties();
         props.setProperty("mail.store.protocol", "imaps");
         HttpSession usernameSession = request.getSession();
@@ -54,6 +77,7 @@ public class ReadingEmail {
                 	bw.write("\n");
                 	
                 	// for date checking
+                	
                 	Date date = originalFormat.parse(formatMMMyyyy(msg));
                 	String formattedDate = targetFormat.format(date);
         			
@@ -62,7 +86,7 @@ public class ReadingEmail {
         			bw.write("SUBJECT:" + msg.getSubject());
         			bw.write("\n");
                         // check for October Spendings
-        			if(formattedDate.equals("Dec 2016")){
+        			if(formattedDate.equals(month+ " 2016")){
         			bw.write("SENT DATE:" + formattedDate);
                         content = msg.getContent();  
                         if (content instanceof String)  
@@ -95,6 +119,10 @@ public class ReadingEmail {
                     
                     
                 }
+            VelocityEngine ve = (VelocityEngine)request.getServletContext().getAttribute("templateEngine");
+    		VelocityContext context = new VelocityContext();
+    		Template template = ve.getTemplate("templates/hotelInfo.html");
+    		context.put("name", allSpendings); 
             bw.write("Total Spendings for December are: "+ totalSpending);
             bw.close();
             System.out.println("finished reading "+messageCount+" Emails!");
@@ -114,6 +142,10 @@ public class ReadingEmail {
 			}
             mex.printStackTrace();
         }
+    }
+    
+    public void getSpendingForMonth(String month) {
+    	
     }
 
 	private static String formatMMMyyyy(Message msg) throws MessagingException {
