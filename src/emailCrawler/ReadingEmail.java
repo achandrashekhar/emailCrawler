@@ -2,6 +2,7 @@ package emailCrawler;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -40,11 +41,14 @@ public class ReadingEmail {
 	}
 	
     public void loginUser(String emailId, String password, HttpServletRequest request, HttpServletResponse response, String month) {
+    	//System.out.println("credentials supplied are "+ emailId+", "+password);
         Properties props = new Properties();
         props.setProperty("mail.store.protocol", "imaps");
         HttpSession usernameSession = request.getSession();
 		usernameSession.setAttribute("username", emailId);
+		
         try {
+        	PrintWriter writer = response.getWriter();
             Session session = Session.getInstance(props, null);
             Store store = session.getStore();
             store.connect("imap.gmail.com", emailId, password);
@@ -57,7 +61,7 @@ public class ReadingEmail {
              // code for converting new date, this needs to be a seperate function
              DateFormat originalFormat = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy");
          	DateFormat targetFormat = new SimpleDateFormat("MMM yyyy");
-             double totalSpending = 0;
+             double totalSpending;
             for(int i =3000;i<=messageCount;i++){
 //            	bw.write("\n");
 //            	bw.write("Reading email number: "+i);
@@ -85,8 +89,10 @@ public class ReadingEmail {
         			bw.write("\n");
         			bw.write("SUBJECT:" + msg.getSubject());
         			bw.write("\n");
-                        // check for October Spendings
-        			if(formattedDate.equals(month+ " 2016")){
+        			//Iterate over all the months
+        			for(String key : allSpendings.keySet()){
+                        // check for the month's Spendings
+        			if(formattedDate.equals(key+ " 2016")){
         			bw.write("SENT DATE:" + formattedDate);
                         content = msg.getContent();  
                         if (content instanceof String)  
@@ -105,7 +111,10 @@ public class ReadingEmail {
                              String multiPartText = (String) bp.getContent();
                              Document doc = Jsoup.parse(multiPartText);
                              Elements element = doc.getElementsByClass("totalPrice topPrice tal black");
+                             totalSpending = allSpendings.get(key);
+                             System.out.println("Got the value "+ element.text().substring(1));
                              totalSpending += Double.parseDouble(element.text().substring(1));
+                             allSpendings.put(key, totalSpending);
                             
                         }  
     
@@ -113,7 +122,7 @@ public class ReadingEmail {
                    }// date if	
                 			
                 			
-
+                   } // for iterating over the map
                 		 
                     	} //if the email is from Uber gets over here
                     
@@ -121,9 +130,11 @@ public class ReadingEmail {
                 }
             VelocityEngine ve = (VelocityEngine)request.getServletContext().getAttribute("templateEngine");
     		VelocityContext context = new VelocityContext();
-    		Template template = ve.getTemplate("templates/hotelInfo.html");
-    		context.put("name", allSpendings); 
-            bw.write("Total Spendings for December are: "+ totalSpending);
+    		Template template = ve.getTemplate("HTML_PAGES/showSpendings.html");
+    		context.put("key", "Dec");
+    		context.put("allSpendings", allSpendings);
+    		template.merge(context, writer);
+           // bw.write("Total Spendings for December are: "+ totalSpending);
             bw.close();
             System.out.println("finished reading "+messageCount+" Emails!");
             System.out.println("Done");
@@ -144,10 +155,25 @@ public class ReadingEmail {
         }
     }
     
-    public void getSpendingForMonth(String month) {
+    public void getSpendingForMonth(String month, HttpServletResponse response, HttpServletRequest request) {
+    	PrintWriter writer;
+		try {
+			writer = response.getWriter();
+			VelocityEngine ve = (VelocityEngine)request.getServletContext().getAttribute("templateEngine");
+			VelocityContext context = new VelocityContext();
+			Template template = ve.getTemplate("HTML_PAGES/showSpendings.html");
+			context.put("key", month);
+			context.put("allSpendings", allSpendings);
+			template.merge(context, writer);	
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
     	
     }
 
+    
 	private static String formatMMMyyyy(Message msg) throws MessagingException {
 		return msg.getSentDate().toString();
 	}

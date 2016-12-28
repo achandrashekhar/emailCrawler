@@ -34,7 +34,8 @@ public class ShowSpendingsServlet extends BaseServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
 		prepareResponse("Logging in ", response,request);
-		String month = (String) request.getAttribute("month");
+		String month = request.getParameter("month");
+		readEmailObject.getSpendingForMonth(month,response,request);
 		
 		finishResponse(response,request);
 	}	
