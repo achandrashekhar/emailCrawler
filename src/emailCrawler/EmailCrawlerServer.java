@@ -18,7 +18,7 @@ public class EmailCrawlerServer {
 		ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
 		servletContextHandler.addServlet(LoginServlet.class,"/login");
 		servletContextHandler.addServlet(LoginServlet.class,"/");
-		servletContextHandler.addServlet(ShowSpendingsServlet.class,"/showspending");
+		servletContextHandler.addServlet(ShowSpendingsServlet.class,"/showspendings");
 		// initialize velocity
         VelocityEngine velocity = new VelocityEngine();
 		velocity.init();

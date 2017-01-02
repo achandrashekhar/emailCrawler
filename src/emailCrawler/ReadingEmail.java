@@ -21,10 +21,13 @@ import org.jsoup.select.Elements;
 
 public class ReadingEmail {
 	//This Map will store total Monthly Spending
-	public static Map<String,Double> allSpendings = new HashMap<String, Double>();
+	private static ReadingEmail singleton = new ReadingEmail();
+	public Map<String,Double> allSpendings = new HashMap<String, Double>();
+	
 	
 	public ReadingEmail() {
 		// Initialize map to Month with corresponding initial spending
+		
 		allSpendings.put("Jan", 0.0);
 		allSpendings.put("Feb", 0.0);
 		allSpendings.put("Mar", 0.0);
@@ -37,6 +40,10 @@ public class ReadingEmail {
 		allSpendings.put("Oct", 0.0);
 		allSpendings.put("Nov", 0.0);
 		allSpendings.put("Dec", 0.0);
+	}
+	
+	public static ReadingEmail getInstance(){
+		return singleton;
 		
 	}
 	
@@ -60,9 +67,10 @@ public class ReadingEmail {
              Object content;
              // code for converting new date, this needs to be a seperate function
              DateFormat originalFormat = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy");
-         	DateFormat targetFormat = new SimpleDateFormat("MMM yyyy");
+         	DateFormat targetFormat = new SimpleDateFormat("MMM d yyyy");
              double totalSpending;
-            for(int i =3000;i<=messageCount;i++){
+             String price;
+            for(int i =1000;i<=messageCount;i++){
 //            	bw.write("\n");
 //            	bw.write("Reading email number: "+i);
             	Message msg = inbox.getMessage(i);	
@@ -90,13 +98,14 @@ public class ReadingEmail {
         			bw.write("SUBJECT:" + msg.getSubject());
         			bw.write("\n");
         			//Iterate over all the months
-        			for(String key : allSpendings.keySet()){
+        			//for(String key : allSpendings.keySet()){
                         // check for the month's Spendings
-        			if(formattedDate.equals(key+ " 2016")){
+        			//if(formattedDate.equals(key+ " 2016")){
         			bw.write("SENT DATE:" + formattedDate);
                         content = msg.getContent();  
                         if (content instanceof String)  
                         {  
+                        	System.out.println("It's going here");
                             String body = (String)content;  
                             bw.write("\n");
                             bw.write("CONTENT:"+body);
@@ -107,34 +116,56 @@ public class ReadingEmail {
                             Multipart mp = (Multipart)content;  
                             BodyPart bp = mp.getBodyPart(0);
                             bw.write("\n");
+                           
                             
                              String multiPartText = (String) bp.getContent();
+                             
+                             
                              Document doc = Jsoup.parse(multiPartText);
                              Elements element = doc.getElementsByClass("totalPrice topPrice tal black");
-                             totalSpending = allSpendings.get(key);
-                             System.out.println("Got the value "+ element.text().substring(1));
-                             totalSpending += Double.parseDouble(element.text().substring(1));
-                             allSpendings.put(key, totalSpending);
+                             Elements elementHeaderPrice = doc.getElementsByClass("header-price");
+                             if(element.text().equals("")){
+                            	price = elementHeaderPrice.text();
+                             }
+                             else {
+                            	 price = element.text();
+                             }
+                             if(price.equals("")){
+                             bw.write("Fu*king Uber changed their front end AGAIN");
+                             } else {
+                            	 bw.write("\nCost for the month of "+formattedDate+" is "+price);
+                             }
+                            
+                             //totalSpending = allSpendings.get(formattedDate);
+                            
+                           //  totalSpending += Double.parseDouble(element.text().substring(1));
+                             //allSpendings.put(formattedDate, totalSpending);
+                            
                             
                         }  
     
                          	
-                   }// date if	
+                //   }// date if	
                 			
                 			
-                   } // for iterating over the map
+               //    } // for iterating over the map
                 		 
                     	} //if the email is from Uber gets over here
                     
                     
                 }
-            VelocityEngine ve = (VelocityEngine)request.getServletContext().getAttribute("templateEngine");
-    		VelocityContext context = new VelocityContext();
-    		Template template = ve.getTemplate("HTML_PAGES/showSpendings.html");
-    		context.put("key", "Dec");
-    		context.put("allSpendings", allSpendings);
-    		template.merge(context, writer);
-           // bw.write("Total Spendings for December are: "+ totalSpending);
+
+            writer = response.getWriter();
+			VelocityEngine ve = (VelocityEngine)request.getServletContext().getAttribute("templateEngine");
+			VelocityContext context = new VelocityContext();
+			Template template = ve.getTemplate("HTML_PAGES/showSpendings.html");
+			context.put("key", "Dec");
+			context.put("allSpendings", allSpendings);
+			template.merge(context, writer);	
+//			for(String key : allSpendings.keySet()){
+//           bw.write("\nTotal Spendings for "+key+ " are: "+ allSpendings.get(key));
+//
+//			}
             bw.close();
             System.out.println("finished reading "+messageCount+" Emails!");
             System.out.println("Done");
@@ -157,13 +188,15 @@ public class ReadingEmail {
     
     public void getSpendingForMonth(String month, HttpServletResponse response, HttpServletRequest request) {
     	PrintWriter writer;
+    	System.out.println("You selected the month "+month);
 		try {
 			writer = response.getWriter();
 			VelocityEngine ve = (VelocityEngine)request.getServletContext().getAttribute("templateEngine");
 			VelocityContext context = new VelocityContext();
 			Template template = ve.getTemplate("HTML_PAGES/showSpendings.html");
-			context.put("key", month);
+			
 			context.put("allSpendings", allSpendings);
+			context.put("key", month);
 			template.merge(context, writer);	
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

@@ -27,7 +27,7 @@ import org.apache.velocity.app.VelocityEngine;
 @SuppressWarnings("serial")
 public class LoginServlet extends BaseServlet {
 	
-	ReadingEmail readEmailObject = new ReadingEmail();
+	private static final DatabaseHandler dbhandler = DatabaseHandler.getInstance();
 
 
 	@Override
@@ -69,7 +69,7 @@ public class LoginServlet extends BaseServlet {
 		prepareResponse("show spendings", response, request);
 		//this will get current default month
 		String currentMonth = getDate();
-		readEmailObject.loginUser(emailId, password, request, response, currentMonth);
+		dbhandler.loginUser(emailId, password, request, response, currentMonth);
 		
 	}
 	
