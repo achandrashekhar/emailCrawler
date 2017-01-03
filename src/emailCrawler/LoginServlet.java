@@ -37,8 +37,8 @@ public class LoginServlet extends BaseServlet {
 		String uname = (String) session.getAttribute("username");
 		
 		if(uname!=null){
-			String date = getDate();
-			String url = "/showspendings?month="+date;
+			
+			String url = "/showspendings?month=Dec";
 			url = response.encodeRedirectURL(url);
 			response.sendRedirect(url);
 		}
@@ -65,10 +65,11 @@ public class LoginServlet extends BaseServlet {
 			throws IOException {
 		String emailId = request.getParameter("user");
 		String password = request.getParameter("pass");
-		
+		HttpSession session = request.getSession();
+		session.setAttribute("username", emailId);
 		prepareResponse("show spendings", response, request);
 		//this will get current default month
-		String currentMonth = getDate();
+		String currentMonth = "Dec";
 		dbhandler.loginUser(emailId, password, request, response, currentMonth);
 		
 	}

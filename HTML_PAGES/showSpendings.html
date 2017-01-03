@@ -9,6 +9,9 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+
+
 <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 </head>
 <body>
@@ -31,18 +34,25 @@
       <li><a href="/showspendings?month=Nov">November</a></li>
       <li><a href="/showspendings?month=Dec">December</a></li>
   </ul> 
+ 
   <br>
   <br>
+  
+  <div class="panel panel-danger">
+      <div class="panel-heading">Your total spendings for $month:</div>
+      <div class="panel-body">$spendingForTheMonth</div>
+    </div>
+  
 </div>
   <div class="panel-group">
-   
+   #foreach($key in $monthSpending.keySet())
     <div class="panel panel-primary">
-      <div class="panel-heading">Spending for the month $key</div>
-      <div class="panel-body">$allSpendings.get($key)</div>
-      
+      <div class="panel-heading">Spending for your trip on $key</div>
+      <div class="panel-body">$monthSpending.get($key)</div>
     </div>
-
+ #end
   </div>
 </div>
+
 </body>
 </html>

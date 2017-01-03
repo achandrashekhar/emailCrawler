@@ -27,7 +27,7 @@ import org.apache.velocity.app.VelocityEngine;
 @SuppressWarnings("serial")
 public class ShowSpendingsServlet extends BaseServlet {
 	
-	private static final ReadingEmail readEmailObject2 = ReadingEmail.getInstance();
+	private static final DatabaseHandler dbhandler = DatabaseHandler.getInstance();
 
 
 	@Override
@@ -35,7 +35,10 @@ public class ShowSpendingsServlet extends BaseServlet {
 			throws IOException {
 		prepareResponse("Logging in ", response,request);
 		String month = request.getParameter("month");
-		readEmailObject2.getSpendingForMonth(month,response,request);
+		HttpSession session = request.getSession();
+		String uname = (String) session.getAttribute("username");
+		System.out.println("This is the showSpendingsServlet and we got the username as "+uname);
+		dbhandler.getSpendingForMonth(uname,month,response,request);
 		
 		finishResponse(response,request);
 	}	

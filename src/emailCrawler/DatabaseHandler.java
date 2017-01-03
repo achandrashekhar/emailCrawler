@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.TreeMap;
 
 import javax.mail.Address;
 import javax.mail.BodyPart;
@@ -71,7 +72,7 @@ public class DatabaseHandler {
 			+ "VALUES (?, ?, ?);";
 
 	/** Used to determine if a username already exists. */
-	private static final String USER_SQL = "SELECT username FROM UberSpendings WHERE username = ?";
+	private static final String USER_SQL = "SELECT emailId FROM UberSpendings WHERE emailId = ?";
 
 	// ------------------ constants below will be useful for the login operation
 	// once you implement it
@@ -91,7 +92,10 @@ public class DatabaseHandler {
 	/**
 	 * This is stuff from the previous Project, I will re cycle from here
 	 */
-	private static final String HOTEL_SQL = "SELECT * FROM hotelDataTable";
+	private static final String TOTAL_SPENDINGS_FOR_MONTH = "select SUM(tripPrice) AS totalSpendingsForOctober from UberSpendings where emailId=? AND date like ? AND date like ?";
+	/** This is to find all 2016 spendings */
+	private static final String SPENDINGS_FOR_MONTH = "select * from UberSpendings where emailId=? AND date like ? AND date like ?";
+	
 	private static final String REVIEW_SQL = "SELECT * from reviews where hotelId = ?";
 	private static final String ADD_REVIEW = "INSERT into reviews (reviewId,hotelID,reviewTitle,reviewText,userName,date,overallRating)"+ "VALUES(?, ?, ?, ?, ?, ?, ?)";
 	private static final String AVG_RATING = "SELECT AVG(overallRating) as average from reviews where hotelId=?";
@@ -202,19 +206,20 @@ public class DatabaseHandler {
 	 * @return Status.OK if user does not exist in database
 	 * @throws SQLException
 	 */
-	private Status duplicateUser(Connection connection, String user) {
+	private Status duplicateUser(String user) {
 
-		assert connection != null;
+		
 		assert user != null;
 
 		Status status = Status.ERROR;
-
+		try (Connection connection = db.getConnection();) {
 		try (PreparedStatement statement = connection.prepareStatement(USER_SQL);) {
 			statement.setString(1, user);
 
 			ResultSet results = statement.executeQuery();
 			status = results.next() ? Status.DUPLICATE_USER : Status.OK;
-		} catch (SQLException e) {
+		} 
+		}catch (SQLException e) {
 			status = Status.SQL_EXCEPTION;
 			System.out.println("Exception occured while processing SQL statement:" + e);
 		}
@@ -284,8 +289,9 @@ public class DatabaseHandler {
  	//System.out.println("credentials supplied are "+ emailId+", "+password);
      Properties props = new Properties();
      props.setProperty("mail.store.protocol", "imaps");
-     HttpSession usernameSession = request.getSession();
-		usernameSession.setAttribute("username", emailId);
+//     HttpSession usernameSession = request.getSession();
+//		usernameSession.setAttribute("username", emailId);
+		
 		
      try {
      	PrintWriter writer = response.getWriter();
@@ -300,12 +306,20 @@ public class DatabaseHandler {
           Object content;
           // code for converting new date, this needs to be a seperate function
           DateFormat originalFormat = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy");
-      	DateFormat targetFormat = new SimpleDateFormat("MMM d yyyy");
+      	DateFormat targetFormat = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy");
           
           String price;
+          Status status = duplicateUser(emailId);
           
+          if(status==Status.DUPLICATE_USER){
+        	  //show the user the spendings directly
+        	  
+  			String url = "/showspendings?month=Dec";
+  			url = response.encodeRedirectURL(url);
+  			response.sendRedirect(url);
+          }
           
-          
+          else{
          for(int i =1000;i<=messageCount;i++){
 //         	bw.write("\n");
 //         	bw.write("Reading email number: "+i);
@@ -399,20 +413,14 @@ public class DatabaseHandler {
                  
                  
              }
+     } // we already have all user info 
      
 
-         writer = response.getWriter();
-			VelocityEngine ve = (VelocityEngine)request.getServletContext().getAttribute("templateEngine");
-			VelocityContext context = new VelocityContext();
-			Template template = ve.getTemplate("HTML_PAGES/showSpendings.html");
-			context.put("key", "Dec");
-			
-			template.merge(context, writer);	
-//			for(String key : allSpendings.keySet()){
-//        bw.write("\nTotal Spendings for "+key+ " are: "+ allSpendings.get(key));
-//
-//			}
+         writer = response.getWriter();	
          bw.close();
+         String url = "/showspendings?month=Dec";
+			url = response.encodeRedirectURL(url);
+			response.sendRedirect(url);
          System.out.println("finished reading "+messageCount+" Emails!");
          System.out.println("Done");
          	
@@ -432,16 +440,55 @@ public class DatabaseHandler {
      }
  }
  
- public void getSpendingForMonth(String month, HttpServletResponse response, HttpServletRequest request) {
+ public void getSpendingForMonth(String emailId,String month, HttpServletResponse response, HttpServletRequest request) {
  	PrintWriter writer;
+ 	Map <String,Double> monthSpending = new HashMap<String,Double>();
  	System.out.println("You selected the month "+month);
+ 	String date;
+ 	 double spendingForTheMonth = 0;
+ 	 double spending;
 		try {
+			try (Connection connection = db.getConnection();) {
+				
+				try (PreparedStatement statement = connection.prepareStatement(TOTAL_SPENDINGS_FOR_MONTH);) {
+					statement.setString(1, emailId);
+					statement.setString(2,"%" + month + "%");
+					statement.setString(3, "%"+"2016"+"%");
+					ResultSet results = statement.executeQuery();
+					if(results.next()) {
+					spendingForTheMonth = results.getDouble(1);
+					} 
+					else {
+						spendingForTheMonth = 0;
+					}
+				}
+				
+				try (PreparedStatement statement2 = connection.prepareStatement(SPENDINGS_FOR_MONTH);) {
+					statement2.setString(1, emailId);
+					statement2.setString(2, "%"+month+"%");
+					statement2.setString(3, "%"+"2016"+"%");
+					ResultSet results2 = statement2.executeQuery();
+					while(results2.next()){
+					date = results2.getString(2);
+					spending = results2.getDouble(3);
+					monthSpending.put(date, spending);
+					}
+				}
+				
+				
+				
+		 	} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			writer = response.getWriter();
 			VelocityEngine ve = (VelocityEngine)request.getServletContext().getAttribute("templateEngine");
 			VelocityContext context = new VelocityContext();
 			Template template = ve.getTemplate("HTML_PAGES/showSpendings.html");
 			
-			//context.put("allSpendings", allSpendings);
+			context.put("month", month);
+			context.put("monthSpending", monthSpending);
+			context.put("spendingForTheMonth", spendingForTheMonth);
 			context.put("key", month);
 			template.merge(context, writer);	
 		} catch (IOException e) {
@@ -456,6 +503,83 @@ public class DatabaseHandler {
 	private static String formatMMMyyyy(Message msg) throws MessagingException {
 		return msg.getSentDate().toString();
 	}
+	
+	protected String getDate(String date) {
+		 
+		 try {
+			 DateFormat originalFormat = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy");
+			 DateFormat newFormat = new SimpleDateFormat("d-MMM-yy");
+			Date fdate = originalFormat.parse(date);
+			String stringDate = newFormat.format(fdate);
+			return stringDate;
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "";
+		
+		
+		
+	}
  
- 
+	public void getGraphSpendingForMonth(String emailId,String month, HttpServletResponse response, HttpServletRequest request) {
+	 	PrintWriter writer;
+	 	System.out.println("You selected the month "+month);
+	 	String date;
+	 	 
+	 	 double spending;
+			try {
+				
+				BufferedWriter bw = new BufferedWriter(new FileWriter("HTML_PAGES/data2.csv"));
+				bw.write("date,close\n");
+				try (Connection connection = db.getConnection();) {
+					
+	
+					
+					try (PreparedStatement statement2 = connection.prepareStatement(SPENDINGS_FOR_MONTH);) {
+						statement2.setString(1, emailId);
+						statement2.setString(2, "%"+month+"%");
+						statement2.setString(3, "%"+"2016"+"%");
+						ResultSet results2 = statement2.executeQuery();
+						while(results2.next()){
+						date = results2.getString(2);
+						String tempdate = getDate(date);
+						spending = results2.getDouble(3);
+						bw.write(tempdate);
+						bw.write(",");
+						String tempSpending = Double.toString(spending);
+						bw.write(tempSpending);
+						bw.write("\n");
+						
+						}
+						bw.close();
+					}
+					
+					
+					
+					
+			 	} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				writer = response.getWriter();
+				VelocityEngine ve = (VelocityEngine)request.getServletContext().getAttribute("templateEngine");
+				VelocityContext context = new VelocityContext();
+				Template template = ve.getTemplate("HTML_PAGES/index.html");
+				
+				context.put("month", month);
+				template.merge(context, writer);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+				
+	 	
+	 }
 }
