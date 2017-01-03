@@ -85,7 +85,7 @@ public class DatabaseHandler {
 	private static final String DELETE_SQL = "DELETE FROM login_users WHERE username = ?";
 	
 	/** Used to insert into UberSpendings Table */
-	private static final String INSERT_UBERSPENDINGS_SQL = "INSERT into UberSpendings (emaillId,date,tripPrice)"+ "VALUES(?, ?, ?)";
+	private static final String INSERT_UBERSPENDINGS_SQL = "INSERT into UberSpendings (emailId,date,tripPrice)"+ "VALUES(?, ?, ?)";
 	/**Used to check if user already has all data updated */
 	private static final String CHECK_FOR_EXISTING_USER = "SELECT * from UberSpendings where emailId = ?";
 	/**
@@ -303,6 +303,9 @@ public class DatabaseHandler {
       	DateFormat targetFormat = new SimpleDateFormat("MMM d yyyy");
           
           String price;
+          
+          
+          
          for(int i =1000;i<=messageCount;i++){
 //         	bw.write("\n");
 //         	bw.write("Reading email number: "+i);
@@ -358,10 +361,18 @@ public class DatabaseHandler {
                           Elements element = doc.getElementsByClass("totalPrice topPrice tal black");
                           Elements elementHeaderPrice = doc.getElementsByClass("header-price");
                           if(element.text().equals("")){
-                         	price = elementHeaderPrice.text();
+                        	  System.out.println("Got this price initially "+elementHeaderPrice.text());
+                        	  if(elementHeaderPrice.text().equals("")){
+                        		  System.out.println("Didn't get any text here");
+                        		  price = "0";
+                        	  }
+                        	  else {
+                         	price = elementHeaderPrice.text().substring(1);
+                         	System.out.println("got this price now "+price);
+                        	  }
                           }
                           else {
-                         	 price = element.text();
+                         	 price = element.text().substring(1);
                           }
                           if(price.equals("")){
                           bw.write("Fu*king Uber changed their front end AGAIN");
@@ -388,6 +399,7 @@ public class DatabaseHandler {
                  
                  
              }
+     
 
          writer = response.getWriter();
 			VelocityEngine ve = (VelocityEngine)request.getServletContext().getAttribute("templateEngine");
