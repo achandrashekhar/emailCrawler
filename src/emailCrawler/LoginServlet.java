@@ -68,7 +68,7 @@ public class LoginServlet extends BaseServlet {
 		HttpSession session = request.getSession();
 		session.setAttribute("username", emailId);
 		prepareResponse("show spendings", response, request);
-		//this will get current default month
+		//this will get current default month, I chose it as December for the landing page
 		String currentMonth = "Dec";
 		dbhandler.loginUser(emailId, password, request, response, currentMonth);
 		

@@ -19,9 +19,7 @@ import org.apache.velocity.app.VelocityEngine;
 //import org.apache.commons.lang3.StringEscapeUtils;
 
 /** 
- * A servlet that handles user Login. doGet() method displays an HTML form with a button and
- * two textfields: one for the username, one for the password.
- * doPost() processes the form: if the username is not taken, it adds user info to the database.
+ * A servlet to calculate total spendings for a chosen Month
  *
  */
 @SuppressWarnings("serial")

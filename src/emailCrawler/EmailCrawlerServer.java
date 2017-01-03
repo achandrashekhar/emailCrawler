@@ -13,13 +13,10 @@ public class EmailCrawlerServer {
 
 	public static void main(String[] args) {
 		Server server = new Server(PORT);
-
-		
 		ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
 		servletContextHandler.addServlet(LoginServlet.class,"/login");
 		servletContextHandler.addServlet(LoginServlet.class,"/");
 		servletContextHandler.addServlet(ShowSpendingsServlet.class,"/showspendings");
-		servletContextHandler.addServlet(ShowGraphSpendings.class, "/showgraphspendings");
 		servletContextHandler.addServlet(LogoutServlet.class,"/logout");
 		// initialize velocity
         VelocityEngine velocity = new VelocityEngine();

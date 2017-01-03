@@ -33,10 +33,7 @@ public class LogoutServlet extends BaseServlet {
 		String url = "/login";
 		url = response.encodeRedirectURL(url);
 		response.sendRedirect(url); // send a get request  (redirect to the same path)
-		//response.encodeRedirectURL("/hotels");
-
-		//displayForm(out); 
-		//finishResponse(response);
+		
 	}
 
 	

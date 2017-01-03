@@ -5,9 +5,9 @@ package emailCrawler;
  * Creates a Status enum type for tracking errors. Each Status enum type
  * will use the ordinal as the error code, and store a message describing
  * the error.
- * @author Prof. Engle
+ * 
  *
- * @see StatusTester
+ * 
  */
 public enum Status {
 

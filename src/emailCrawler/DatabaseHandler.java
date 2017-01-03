@@ -50,9 +50,9 @@ import org.jsoup.select.Elements;
 
 /**
  * Handles all database-related actions. Uses singleton design pattern. Modified
- * by Prof. Karpenko from the original example of Prof. Engle.
  * 
- * @see RegisterServer
+ * 
+ * @see EmailCrawlerServer
  */
 public class DatabaseHandler {
 
@@ -67,61 +67,20 @@ public class DatabaseHandler {
 			+ "userid INTEGER AUTO_INCREMENT PRIMARY KEY, " + "username VARCHAR(32) NOT NULL UNIQUE, "
 			+ "password CHAR(64) NOT NULL, " + "usersalt CHAR(32) NOT NULL);";
 
-	/** Used to insert a new user's info into the login_users table */
-	private static final String REGISTER_SQL = "INSERT INTO login_users (username, password, usersalt) "
-			+ "VALUES (?, ?, ?);";
-
 	/** Used to determine if a username already exists. */
 	private static final String USER_SQL = "SELECT emailId FROM UberSpendings WHERE emailId = ?";
 
-	// ------------------ constants below will be useful for the login operation
-	// once you implement it
-	/** Used to retrieve the salt associated with a specific user. */
-	private static final String SALT_SQL = "SELECT usersalt FROM login_users WHERE username = ?";
-
-	/** Used to authenticate a user. */
-	private static final String AUTH_SQL = "SELECT username FROM login_users " + "WHERE username = ? AND password = ?";
-
-	/** Used to remove a user from the database. */
-	private static final String DELETE_SQL = "DELETE FROM login_users WHERE username = ?";
-	
 	/** Used to insert into UberSpendings Table */
 	private static final String INSERT_UBERSPENDINGS_SQL = "INSERT into UberSpendings (emailId,date,tripPrice)"+ "VALUES(?, ?, ?)";
-	/**Used to check if user already has all data updated */
-	private static final String CHECK_FOR_EXISTING_USER = "SELECT * from UberSpendings where emailId = ?";
-	/**
-	 * This is stuff from the previous Project, I will re cycle from here
-	 */
+	
+	/** This will calculate total spendings for a chosen month */
 	private static final String TOTAL_SPENDINGS_FOR_MONTH = "select SUM(tripPrice) AS totalSpendingsForOctober from UberSpendings where emailId=? AND date like ? AND date like ?";
+	
 	/** This is to find all 2016 spendings */
 	private static final String SPENDINGS_FOR_MONTH = "select * from UberSpendings where emailId=? AND date like ? AND date like ?";
 	
-	private static final String REVIEW_SQL = "SELECT * from reviews where hotelId = ?";
-	private static final String ADD_REVIEW = "INSERT into reviews (reviewId,hotelID,reviewTitle,reviewText,userName,date,overallRating)"+ "VALUES(?, ?, ?, ?, ?, ?, ?)";
-	private static final String AVG_RATING = "SELECT AVG(overallRating) as average from reviews where hotelId=?";
-	private static final String KEYWORD_SEARCH = "SELECT * from hotelDataTable where hotelName LIKE ? ESCAPE '!'";
-	private static final String PARTICULAR_HOTEL = "SELECT * FROM hotelDataTable where hotelId=?";
-	private static final  String SEARCH_BY_PLACE = "SELECT * FROM hotelDataTable WHERE city = ? OR state = ? OR country = ? ";
-	
-	private static final String UPDATE_REVIEW = "UPDATE reviews SET reviewTitle = ?,reviewText = ?,overAllRating = ?,date=? WHERE userName=? AND hotelID=? ";
-	private static final String SAVE_HOTEL = "INSERT INTO savedHotels(userName,hotelID,hotelName)"+"VALUES(?,?,?)";
-	private static final String GET_SAVED_HOTELS = "SELECT * from savedHotels where userName = ?";
-	private static final String GET_LAST_LOGIN = "SELECT * from lastLogin where userName=?";
-	private static final String INSERT_LAST_LOGIN = "INSERT into lastLogin(userName,lastLoginDate)"+"VALUES(?,?)";
-	private static final String UPDATE_LAST_LOGIN ="UPDATE lastLogin SET lastLoginDate=? where userName=?";
-	private static final String SORT_REVIEWS_BY_DATE = "SELECT * FROM reviews where hotelID=? ORDER BY date DESC";
-	private static final String SORT_REVIEWS_BY_RATING = "SELECT * FROM reviews where hotelID=? ORDER BY overAllRating DESC";
-	private static final String CLEAR_SAVED_HOTELS = "DELETE FROM savedHotels where userName=? ";
-	private static final String SAVE_EXPEDIA_LINK = "INSERT INTO expediaLinks(userName,hotelID,link)"+"VALUES(?,?,?)";
-	private static final String GET_SAVED_LINKS = "SELECT * from expediaLinks where userName = ?";
-	private static final String CLEAR_EXPEDIA_LINKS = "DELETE FROM expediaLinks where userName=? ";
-	private static final String PAGINATED_REVIEWS = "SELECT * FROM reviews where hotelID=? LIMIT ?,5";
-	private static final String REVIEWS_COUNT = "SELECT COUNT(reviewID) from reviews where hotelID=?";
 	/** Used to configure connection to database. */
 	private DatabaseConnector db;
-
-	/** Used to generate password hash salt for user. */
-	private Random random;
 
 	/**
 	 * This class is a singleton, so the constructor is private. Other classes
@@ -129,8 +88,6 @@ public class DatabaseHandler {
 	 */
 	public DatabaseHandler() {
 		Status status = Status.OK;
-		random = new Random(System.currentTimeMillis());
-
 		try {
 			db = new DatabaseConnector("database.properties");
 			status = db.testConnection() ? setupTables() : Status.CONNECTION_FAILED;
@@ -197,7 +154,7 @@ public class DatabaseHandler {
 
 	/**
 	 * Tests if a user already exists in the database. Requires an active
-	 * database connection.
+	 * database connection. If the user info is already stored, we need not crawl the inbox!
 	 *
 	 * @param connection
 	 *            - active database connection
@@ -226,16 +183,14 @@ public class DatabaseHandler {
 
 		return status;
 	}
-
 	
-	
-
-	
-
-	
-	
-	
-	
+	/**
+	 * This method enters all the user info - emailID, the timestamp of the trip and the price of the trip
+	 * @param emailId
+	 * @param date
+	 * @param tripPrice
+	 * @return
+	 */
 	public Status createUberSpendingsTable(String emailId, String date, double tripPrice){
 		Status status=Status.OK;
 		
@@ -255,46 +210,22 @@ public class DatabaseHandler {
 		} 
 		return status;
 	}
-	
-	 
-	 
-	
-	
-	
+
+ 
  /**
-  * Look up if user has already entered a review
+  * This method will first check if we have the user info in the database, if not, we will crawl the inbox folder
   * @param emailId
-  * @param hotelID
-  * @return
+  * @param password
+  * @param request
+  * @param response
+  * @param month
   */
- public Status lookUpExistingUserReview(String emailId){
-		Status status=Status.OK;
-		try (Connection connection = db.getConnection();) {
-			try (PreparedStatement statement = connection.prepareStatement(CHECK_FOR_EXISTING_USER);) {
-				statement.setString(1, emailId);
-			
-				ResultSet results = statement.executeQuery();
-				status = results.next() ? Status.OK: Status.ERROR;
-				
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return status;
-	}
- 
- 
  public void loginUser(String emailId, String password, HttpServletRequest request, HttpServletResponse response, String month) {
- 	//System.out.println("credentials supplied are "+ emailId+", "+password);
+ 	
      Properties props = new Properties();
-     props.setProperty("mail.store.protocol", "imaps");
-//     HttpSession usernameSession = request.getSession();
-//		usernameSession.setAttribute("username", emailId);
-		
-		
+     props.setProperty("mail.store.protocol", "imaps");	
      try {
-     	PrintWriter writer = response.getWriter();
+     	response.getWriter();
          Session session = Session.getInstance(props, null);
          Store store = session.getStore();
          store.connect("imap.gmail.com", emailId, password);
@@ -304,7 +235,6 @@ public class DatabaseHandler {
          System.out.println(messageCount);
           BufferedWriter bw = new BufferedWriter(new FileWriter("UberEmails.txt"));
           Object content;
-          // code for converting new date, this needs to be a seperate function
           DateFormat originalFormat = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy");
       	DateFormat targetFormat = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy");
           
@@ -312,46 +242,30 @@ public class DatabaseHandler {
           Status status = duplicateUser(emailId);
           
           if(status==Status.DUPLICATE_USER){
-        	  //show the user the spendings directly
-        	  
+        	  //show the user the spendings, directly retrieve it from the database
   			String url = "/showspendings?month=Dec";
   			url = response.encodeRedirectURL(url);
   			response.sendRedirect(url);
-          }
-          
+          } // Crawl the email inbox! 
           else{
          for(int i =1000;i<=messageCount;i++){
-//         	bw.write("\n");
-//         	bw.write("Reading email number: "+i);
          	Message msg = inbox.getMessage(i);	
          	Address[] in = msg.getFrom();
-         	
-
-         	
-             
                 if(InternetAddress.toString(in).contains("Uber Receipts")) {
                
              	   bw.write("\n");
                 	bw.write("---------------------------------");
                 	bw.write("\n");
                 	bw.write("FROM:" +InternetAddress.toString(in));
-             	
-             	bw.write("\n");
-             	
-             	// for date checking
-             	
-             	Date date = originalFormat.parse(formatMMMyyyy(msg));
-             	String formattedDate = targetFormat.format(date);
+                	bw.write("\n");
+                	Date date = originalFormat.parse(formatMMMyyyy(msg));
+                	String formattedDate = targetFormat.format(date);
      			
      			
-     			bw.write("\n");
-     			bw.write("SUBJECT:" + msg.getSubject());
-     			bw.write("\n");
-     			//Iterate over all the months
-     			//for(String key : allSpendings.keySet()){
-                     // check for the month's Spendings
-     			//if(formattedDate.equals(key+ " 2016")){
-     			bw.write("SENT DATE:" + formattedDate);
+                	bw.write("\n");
+                	bw.write("SUBJECT:" + msg.getSubject());
+                	bw.write("\n");
+                	bw.write("SENT DATE:" + formattedDate);
                      content = msg.getContent();  
                      if (content instanceof String)  
                      {  
@@ -394,40 +308,21 @@ public class DatabaseHandler {
                         	  createUberSpendingsTable(emailId, formattedDate, Double.parseDouble(price));
                          	 bw.write("\nCost for the month of "+formattedDate+" is "+price);
                           }
-                         
-                          //totalSpending = allSpendings.get(formattedDate);
-                         
-                        //  totalSpending += Double.parseDouble(element.text().substring(1));
-                          //allSpendings.put(formattedDate, totalSpending);
-                         
-                         
-                     }  
- 
-                      	
-             //   }// date if	
-             			
-             			
-            //    } // for iterating over the map
+                     } 
              		 
                  	} //if the email is from Uber gets over here
                  
                  
              }
-     } // we already have all user info 
-     
-
-         writer = response.getWriter();	
+     } 
+         response.getWriter();	
          bw.close();
          String url = "/showspendings?month=Dec";
 			url = response.encodeRedirectURL(url);
 			response.sendRedirect(url);
          System.out.println("finished reading "+messageCount+" Emails!");
          System.out.println("Done");
-         	
-         
-         
-         
-     } catch (Exception mex) {
+      } catch (Exception mex) {
      	String url = "/login?error=" + "Wrong_Credentials_Try_Again";
 			url = response.encodeRedirectURL(url);
 			try {
@@ -440,6 +335,13 @@ public class DatabaseHandler {
      }
  }
  
+ /**
+  * This method calculates total spending for a month and also displays individual spendings during that month
+  * @param emailId
+  * @param month
+  * @param response
+  * @param request
+  */
  public void getSpendingForMonth(String emailId,String month, HttpServletResponse response, HttpServletRequest request) {
  	PrintWriter writer;
  	Map <String,Double> monthSpending = new HashMap<String,Double>();
@@ -499,11 +401,20 @@ public class DatabaseHandler {
  	
  }
 
- 
+ /**
+  * converts the date to standard date format in String
+  * @param msg
+  * @return
+  * @throws MessagingException
+  */
 	private static String formatMMMyyyy(Message msg) throws MessagingException {
 		return msg.getSentDate().toString();
 	}
-	
+	/**
+	 * This method changes the format of the date to the format d-MMM-yy for the d3 graph
+	 * @param date
+	 * @return
+	 */
 	protected String getDate(String date) {
 		 
 		 try {
@@ -516,12 +427,16 @@ public class DatabaseHandler {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return "";
-		
-		
-		
+		return "";			
 	}
- 
+	
+ /**
+  * Made this method to display spending behaviour by using a graph, but Velocity wouldn't render it!
+  * @param emailId
+  * @param month
+  * @param response
+  * @param request
+  */
 	public void getGraphSpendingForMonth(String emailId,String month, HttpServletResponse response, HttpServletRequest request) {
 	 	PrintWriter writer;
 	 	System.out.println("You selected the month "+month);
@@ -553,11 +468,7 @@ public class DatabaseHandler {
 						
 						}
 						bw.close();
-					}
-					
-					
-					
-					
+					}		
 			 	} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
