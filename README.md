@@ -1,2 +1,2 @@
 # emailCrawler
-An email Crawler to analyze your various spendings!
+An email Crawler to analyze my Uber spendings!
